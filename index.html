@@ -1,0 +1,720 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>コドラート被度計</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="被度計">
+<meta name="theme-color" content="#2F6B45">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}</style>
+</head>
+<body>
+<style>
+:root{
+  --bg:#EDF1EC; --surface:#F8FAF7; --surface2:#E3E9E3; --ink:#1D2A22; --muted:#5B6A60; --line:#C7D1C8;
+  --accent:#2F6B45; --accent-ink:#FFFFFF; --paper:#FBFCF9; --grid:#C9D3CA; --grid-major:#98A89C; --danger:#B2412E;
+  --jp:"BIZ UDPGothic","Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#111713; --surface:#18201B; --surface2:#222C25; --ink:#E3EAE4; --muted:#93A398; --line:#2F3B32;
+    --accent:#7CC293; --accent-ink:#0E1A12; --paper:#1B231D; --grid:#2C372F; --grid-major:#4A5A4E; --danger:#E27A66;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#111713; --surface:#18201B; --surface2:#222C25; --ink:#E3EAE4; --muted:#93A398; --line:#2F3B32;
+  --accent:#7CC293; --accent-ink:#0E1A12; --paper:#1B231D; --grid:#2C372F; --grid-major:#4A5A4E; --danger:#E27A66;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--jp);font-size:15px;line-height:1.55;padding:0 16px;-webkit-tap-highlight-color:transparent}
+.wrap{max-width:1280px;margin:0 auto;padding-block:14px 40px}
+header.top{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+header.top h1{font-size:20px;margin:0;letter-spacing:.02em}
+header.top p{margin:0;color:var(--muted);font-size:13px}
+.app{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:18px;align-items:start}
+@media (max-width:900px){.app{grid-template-columns:minmax(0,1fr)}}
+.tools{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:10px}
+.lbl{font-size:12px;color:var(--muted);letter-spacing:.06em}
+.seg{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--surface)}
+.seg button{border:0;background:transparent;color:var(--ink);font:600 15px var(--mono);min-width:48px;padding:10px 8px;cursor:pointer;border-right:1px solid var(--line)}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.btn{border:1px solid var(--line);background:var(--surface);color:var(--ink);font:700 14px var(--jp);padding:10px 14px;border-radius:10px;cursor:pointer;min-height:44px}
+.btn:active{transform:translateY(1px)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.warn{color:var(--danger)}
+.btn:focus-visible,.seg button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.toggle{display:flex;align-items:center;gap:8px;font-size:14px;cursor:pointer;min-height:44px}
+.toggle input{width:20px;height:20px;accent-color:var(--accent)}
+.stage{position:relative;display:flex;justify-content:center}
+canvas#cv{touch-action:none;display:block;border:2px solid var(--ink);border-radius:2px;background:var(--paper);max-width:100%}
+.scale{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;color:var(--muted);font-size:12px;margin-top:6px;font-family:var(--mono)}
+.active-note{display:flex;align-items:center;gap:8px;font-size:14px}
+.chip{width:14px;height:14px;border-radius:3px;display:inline-block;flex:none}
+.panel{display:flex;flex-direction:column;gap:14px}
+.box{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px}
+.box h2{font-size:13px;margin:0 0 10px;color:var(--muted);letter-spacing:.08em;font-weight:700}
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fields label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted)}
+.fields .full{grid-column:1/-1}
+input,select{font:15px var(--jp);color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:9px 10px;min-height:42px;width:100%}
+input[type=number]{font-family:var(--mono)}
+.presets{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.presets button{font:600 13px var(--mono);padding:6px 10px;border-radius:8px;border:1px solid var(--line);background:var(--paper);color:var(--ink);cursor:pointer;min-height:36px}
+.total{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.total .num{font:600 34px var(--mono);font-variant-numeric:tabular-nums}
+.total .sub{color:var(--muted);font-size:13px}
+.splist{display:flex;flex-direction:column;gap:8px}
+.sp{border:1px solid var(--line);border-radius:10px;background:var(--paper)}
+.sp.active{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+.sp-head{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px;cursor:pointer}
+.sp-name{border:0;background:transparent;padding:2px 0;min-height:0;font-weight:700}
+.sp-name:focus{background:var(--surface);padding:2px 6px}
+.sp-val{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;line-height:1.2}
+.sp-val b{font-size:18px}
+.sp-val small{display:block;color:var(--muted);font-size:11px}
+.cls{display:inline-block;min-width:26px;text-align:center;border:1px solid var(--line);border-radius:6px;font:600 12px var(--mono);padding:1px 4px;margin-left:6px;color:var(--muted)}
+.patches{border-top:1px dashed var(--line);padding:6px 10px 10px;display:flex;flex-direction:column;gap:6px}
+.prow{display:grid;grid-template-columns:auto 1fr auto auto;gap:8px;align-items:center;font-family:var(--mono);font-size:13px;font-variant-numeric:tabular-nums}
+.prow select{min-height:34px;padding:4px 6px;width:auto;font-family:var(--mono)}
+.prow .x{border:0;background:transparent;color:var(--danger);font-size:18px;width:34px;height:34px;cursor:pointer}
+.prow .calc{color:var(--muted)}
+.addsp{display:flex;gap:8px;margin-top:10px}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.actions .btn{flex:1 1 140px}
+.banner{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:var(--surface2);border-radius:10px;padding:10px 12px;font-size:13px;margin-bottom:10px}
+.rec{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px}
+.rec:last-child{border-bottom:0}
+.rec .meta{color:var(--muted);font-size:12px;font-family:var(--mono)}
+.rec .btn{min-height:36px;padding:6px 10px;font-size:13px}
+.muted{color:var(--muted);font-size:13px}
+textarea#csvOut{width:100%;min-height:120px;font:12px var(--mono);background:var(--paper);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px;margin-top:8px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.show{opacity:1}
+details.help summary{cursor:pointer;font-weight:700;font-size:13px}
+details.help ul{margin:8px 0 0;padding-left:18px;font-size:13px;color:var(--muted)}
+.tabs{display:flex;gap:4px;background:var(--surface2);padding:4px;border-radius:12px;margin-left:auto}
+.tabs button{border:0;background:transparent;color:var(--muted);font:700 14px var(--jp);padding:9px 16px;border-radius:9px;cursor:pointer;min-height:40px}
+.tabs button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.tabs .cnt{font-family:var(--mono);font-size:12px;margin-left:4px;color:var(--muted)}
+.custom{display:flex;align-items:center;gap:4px;border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:0 10px 0 4px;font:600 15px var(--mono)}
+.custom input{border:0;background:transparent;width:78px;min-height:42px;padding:6px;font:600 15px var(--mono)}
+.custom.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.custom.on input{color:var(--accent-ink)}
+.custom.on input::placeholder{color:var(--accent-ink)}
+.dens-row{display:flex;gap:8px;flex-wrap:wrap;align-items:stretch}
+.prow input.pd{width:76px;min-height:34px;padding:4px 6px;font:600 13px var(--mono);text-align:right}
+.recs{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;align-items:start}
+.rcard{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.rcard .rh{display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap}
+.rcard .rh b{font-size:17px}
+.rcard .meta{color:var(--muted);font-size:12px;font-family:var(--mono)}
+.rcard .tot{font:600 22px var(--mono);font-variant-numeric:tabular-nums}
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:left;font-weight:700;color:var(--muted);font-size:11px;letter-spacing:.06em;border-bottom:1px solid var(--line);padding:4px 4px}
+.tbl td{padding:5px 4px;border-bottom:1px solid var(--line)}
+.tbl td.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+.tbl tr:last-child td{border-bottom:0}
+.rcard .actions .btn{flex:1 1 90px;white-space:nowrap;padding-inline:10px}
+.rec-top{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin-bottom:12px}
+.rec-top h2{margin:0;font-size:17px}
+.crop{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;flex-direction:column;padding:calc(10px + env(safe-area-inset-top,0px)) 16px calc(12px + env(safe-area-inset-bottom,0px))}
+.crop-bar{display:flex;flex-direction:column;gap:2px;margin-bottom:8px}
+.crop-bar b{font-size:17px}
+.crop-stage{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;position:relative}
+#cropCv{touch-action:none;display:block;max-width:100%;max-height:100%}
+.crop-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.crop-actions .grow{flex:1}
+.crop-busy{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.35);color:#fff;font-weight:700;font-size:16px}
+.sugg{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.sugg button,.sgrid button{border:1px solid var(--line);background:var(--paper);color:var(--ink);font:14px var(--jp);padding:7px 10px;border-radius:8px;cursor:pointer;min-height:38px;text-align:left}
+.sugg button.new{border-style:dashed;color:var(--muted)}
+.sheet{position:fixed;inset:0;z-index:40;background:var(--bg);display:flex;flex-direction:column;padding:calc(10px + env(safe-area-inset-top,0px)) 16px calc(12px + env(safe-area-inset-bottom,0px))}
+.sheet-head{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+.sheet-head b{font-size:17px;margin-right:auto}
+.gyou{display:flex;gap:4px;flex-wrap:wrap;margin:8px 0}
+.gyou button{border:1px solid var(--line);background:var(--surface);color:var(--ink);font:700 13px var(--jp);min-width:40px;min-height:36px;border-radius:8px;cursor:pointer}
+.sbody{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.sgroup h3{font-size:12px;color:var(--muted);letter-spacing:.08em;margin:12px 0 6px;position:sticky;top:0;background:var(--bg);padding:4px 0}
+.sgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px}
+.sgrid button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.sgrid button[aria-pressed="true"]::before{content:"✓ "}
+#spEditTa{width:100%;flex:1;min-height:200px;font:15px/1.6 var(--jp);background:var(--paper);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:10px}
+@media (prefers-reduced-motion:reduce){.toast{transition:none}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <h1>コドラート被度計</h1>
+    <p>方形区内を指かApple Pencilで囲み、面積×密度で被度（%）を求めます。</p>
+    <nav class="tabs" aria-label="画面切替">
+      <button id="tabMeasure" aria-pressed="true">計測</button>
+      <button id="tabRecords" aria-pressed="false">記録一覧<span class="cnt" id="recCount"></span></button>
+    </nav>
+  </header>
+
+  <div id="viewMeasure">
+  <div class="banner" id="sampleBanner" hidden>
+    <span>サンプルデータを表示中です（ススキ・ヨモギ・クズは例です）。</span>
+    <button class="btn" id="clearSample">空の調査で始める</button>
+  </div>
+
+  <div class="app">
+    <section>
+      <div class="tools">
+        <div>
+          <div class="lbl">描く範囲の密度</div>
+          <div class="dens-row">
+            <div class="seg" id="densSeg" role="group" aria-label="密度"></div>
+            <label class="custom" id="customWrap" title="任意の密度（0.1〜100%）">任意<input id="densCustom" type="number" min="0.1" max="100" step="0.1" inputmode="decimal" placeholder="—" aria-label="任意の密度（%）">%</label>
+          </div>
+        </div>
+      </div>
+      <div class="tools">
+        <div class="active-note" id="activeNote"></div>
+        <span style="flex:1"></span>
+        <label class="toggle"><input type="checkbox" id="penOnly"> ペンのみで描画</label>
+        <button class="btn" id="undoBtn">元に戻す</button>
+        <label class="btn" for="photoIn" style="display:inline-flex;align-items:center">背景写真</label>
+        <input type="file" id="photoIn" accept="image/*" hidden>
+        <button class="btn" id="photoAdjust" hidden>写真を調整</button>
+        <button class="btn" id="photoClear" hidden>写真を外す</button>
+      </div>
+      <div class="stage" id="stage"><canvas id="cv" aria-label="方形区の描画エリア"></canvas></div>
+      <div class="scale"><span id="scaleTxt"></span><span id="gridTxt"></span></div>
+    </section>
+
+    <aside class="panel">
+      <div class="box">
+        <h2>調査区</h2>
+        <div class="fields">
+          <label>調査区ID<input id="fId" type="text"></label>
+          <label>調査日<input id="fDate" type="date"></label>
+          <label class="full">調査者<input id="fWho" type="text" placeholder="氏名"></label>
+          <label>幅 (m)<input id="fW" type="number" min="0.1" step="0.1" inputmode="decimal"></label>
+          <label>奥行 (m)<input id="fH" type="number" min="0.1" step="0.1" inputmode="decimal"></label>
+        </div>
+        <div class="presets" id="presets"></div>
+      </div>
+
+      <div class="box">
+        <h2>結果</h2>
+        <div class="total"><span class="num" id="totalNum">0.0%</span><span class="sub" id="totalSub">植被率（全種の重なりを除く）</span></div>
+        <div class="splist" id="spList"></div>
+        <div class="addsp">
+          <input id="newSp" type="text" placeholder="種名を検索・入力（ひらがな可）" autocomplete="off" aria-label="種名を検索・入力">
+          <button class="btn primary" id="addSpBtn">追加</button>
+        </div>
+        <div class="sugg" id="sugg"></div>
+        <button class="btn" id="openPicker" style="margin-top:8px;width:100%">登録種の一覧から選ぶ</button>
+      </div>
+
+      <div class="box">
+        <h2>記録</h2>
+        <div class="actions">
+          <button class="btn primary" id="saveBtn">この調査を保存</button>
+          <button class="btn" id="csvBtn">CSVをコピー</button>
+          <button class="btn warn" id="newBtn">新規調査</button>
+        </div>
+        <textarea id="csvOut" hidden readonly aria-label="CSV"></textarea>
+        <p class="muted" style="margin:10px 0 0">保存した調査は上の「記録一覧」で確認・再編集できます。同じ調査区IDと調査日で保存すると上書きされます。</p>
+      </div>
+
+      <div class="box">
+        <details class="help">
+          <summary>計算方法と使い方</summary>
+          <ul>
+            <li>囲んだ範囲の面積（方形区に対する割合）× 選んだ密度 ＝ その範囲の被度。密度は「任意」欄に0.1〜100%の値を入力して使うこともできます。</li>
+            <li>同じ種の範囲が重なった部分は、高い方の密度だけを数えます（二重計上しません）。</li>
+            <li>方形区の外にはみ出して描いても、枠内だけが計算されます。枠の縁まで塗りたいときは外側まで回してください。</li>
+            <li>植被率は、全種を重ねたときに各地点で最大の密度をとった値です。</li>
+            <li>階級はBraun-Blanquetの被度階級の目安です（5:75%超／4:50–75／3:25–50／2:10–25／1:1–10／+:1%未満）。</li>
+            <li>データはこの端末のブラウザ内に保存されます。大事な記録はCSVをコピーしてメモやメールに貼り付けてください。</li>
+            <li>Safariの共有メニュー「ホーム画面に追加」でアプリのように使えます。</li>
+          </ul>
+        </details>
+      </div>
+    </aside>
+  </div>
+  </div>
+
+  <div id="viewRecords" hidden>
+    <div class="rec-top">
+      <h2>保存した調査</h2>
+      <div class="actions">
+        <button class="btn" id="csvAllBtn">全件をCSVでコピー</button>
+      </div>
+    </div>
+    <textarea id="csvOutAll" hidden readonly aria-label="CSV（全件）"></textarea>
+    <div class="recs" id="recList"></div>
+  </div>
+</div>
+<datalist id="densList"><option value="100"><option value="75"><option value="50"><option value="25"><option value="10"><option value="5"><option value="1"></datalist>
+<div class="crop" id="crop" hidden>
+  <div class="crop-bar">
+    <b>写真を方形区に合わせる</b>
+    <span class="muted">写真に写っている方形区の四隅に、●（左上・右上・右下・左下）をドラッグして合わせてください。斜めから撮った写真も真上から見た形に補正されます。</span>
+  </div>
+  <div class="crop-stage" id="cropStage"><canvas id="cropCv" aria-label="トリミング範囲の調整"></canvas><div class="crop-busy" id="cropBusy" hidden>補正しています…</div></div>
+  <div class="crop-actions">
+    <button class="btn" id="cropRot">向きを90°回す</button>
+    <button class="btn" id="cropReset">四隅を戻す</button>
+    <button class="btn" id="cropFull">写真全体を使う</button>
+    <span class="grow"></span>
+    <button class="btn" id="cropCancel">キャンセル</button>
+    <button class="btn primary" id="cropOk">この範囲で決定</button>
+  </div>
+</div>
+<div class="sheet" id="picker" hidden>
+  <div id="pickMain" style="display:flex;flex-direction:column;flex:1;min-height:0">
+    <div class="sheet-head"><b>登録種から選ぶ</b><button class="btn" id="pickEdit">リストを編集</button><button class="btn primary" id="pickClose">閉じる</button></div>
+    <input id="pickSearch" type="search" placeholder="検索（例：ひめ、スゲ）" autocomplete="off" aria-label="登録種を検索">
+    <div class="gyou" id="gyouBar"></div>
+    <p class="muted" style="margin:0">タップすると調査に追加され、続けて複数選べます。もう一度タップすると描画中の種に切り替わります。</p>
+    <div class="sbody" id="pickBody"></div>
+  </div>
+  <div id="pickEditor" hidden style="display:flex;flex-direction:column;flex:1;min-height:0;gap:8px">
+    <div class="sheet-head"><b>登録種リストの編集</b></div>
+    <p class="muted" style="margin:0">1行に1種ずつ入力します。Excelやメモからまとめて貼り付けることもできます（先頭の番号は自動で取り除きます）。</p>
+    <textarea id="spEditTa" aria-label="登録種リスト"></textarea>
+    <div class="actions"><button class="btn warn" id="pickDefault">初期リストに戻す</button><button class="btn" id="pickEditCancel">キャンセル</button><button class="btn primary" id="pickEditSave">保存</button></div>
+  </div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(function(){
+const DENS=[100,75,50,25,10,5,1];
+const COLORS=['#2E8B57','#D08C1F','#3A6FB0','#B8428C','#7A5BC4','#C4452F','#2A9AA0','#8A7A2A','#5E9A1F','#A0522D','#1F5F8B','#D0587E'];
+const DEFAULT_SP=["アオスゲ", "アオツヅラフジ", "アカシデ", "イヌコウジュ", "イヌワラビ", "イノモトソウ", "ウツボグサ", "ウラジロチチコグサ", "エゴノキ", "エノキ", "エノキグサ", "オカトラノオ", "オッタチカタバミ", "オトギリソウ", "オニユリ", "オミナエシ", "オランダミミナグサ", "カスマグサ", "カタバミ", "カニツリグサ", "ガマズミ", "カワラナデシコ", "キツネノボタン", "キンミズヒキ", "クヌギ", "クロガネモチ", "ケチヂミザサ", "ゲンノショウコ", "コナラ", "コバギボウシ", "コヒロハハナヤスリ", "コブナグサ", "コモチマンネングサ", "ジャノヒゲ", "スイカズラ", "スギナ", "セイタカアワダチソウ", "タチイヌノフグリ", "チガヤ", "ツタ", "ツメクサ", "ツルボ", "ナキリスゲ", "ヌカボ", "ネコハギ", "ネジバナ", "ノゲシ", "ノコンギク", "ノシバ", "ノミノツヅリ", "ハルジオン", "ハルジョオン", "ヒサカキ", "ヒメアシボソ", "ヒメクグ", "ヒメコバンソウ", "ヒメジソ", "ヒメジョオン", "ヒメムカシヨモギ", "ヒメヤブラン", "ヒメユズリハ", "フタリシズカ", "フモトシダ", "フユヅタ", "ヘクソカズラ", "ベニシダ", "マツバウンラン", "ミズヒキ", "ミソハギ", "ミツバアケビ", "ミツバツチグリ", "ムクノキ", "ムラサキシキブ", "メアオスゲ", "メリケンカルカヤ", "モエギスゲ", "ヤハズエンドウ", "ヤハズソウ", "ヤブソテツ", "ヤブラン", "ヤマヌカボ", "ヤマユリ", "ユウガギク", "リョウメンシダ", "ワレモコウ", "Ligustrum sp.", "Poaceae sp."];
+const KEY_CUR='qcover.current.v1', KEY_REC='qcover.records.v1';
+const $=id=>document.getElementById(id);
+const uid=()=>Math.random().toString(36).slice(2,9);
+const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
+
+function store(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}}
+function load(k){try{const s=localStorage.getItem(k);return s?JSON.parse(s):null}catch(e){return null}}
+
+function blob(cx,cy,r,n,seed){const p=[];for(let i=0;i<n;i++){const a=i/n*Math.PI*2;const k=1+.28*Math.sin(a*3+seed)+.14*Math.cos(a*5+seed*2);p.push([cx+Math.cos(a)*r*k,cy+Math.sin(a)*r*k*.9]);}return p;}
+function sample(){
+  return {sample:true,plot:{id:'Q-01',date:today(),who:'',w:1,h:1},density:100,
+    species:[
+      {id:uid(),name:'ススキ',color:COLORS[0],patches:[{id:uid(),d:100,pts:blob(.30,.32,.2,48,1)},{id:uid(),d:50,pts:blob(.72,.70,.17,48,2)}]},
+      {id:uid(),name:'ヨモギ',color:COLORS[1],patches:[{id:uid(),d:25,pts:blob(.68,.26,.18,48,3)}]},
+      {id:uid(),name:'クズ',color:COLORS[2],patches:[{id:uid(),d:75,pts:blob(.28,.76,.16,48,4)}]}
+    ],active:null,photo:null};
+}
+function blank(prev){return {sample:false,plot:{id:nextId(prev?prev.plot.id:'Q-00'),date:today(),who:prev?prev.plot.who:'',w:prev?prev.plot.w:1,h:prev?prev.plot.h:1},density:100,species:[],active:null,photo:null};}
+function nextId(id){const m=/(\d+)(?!.*\d)/.exec(id||'');if(!m)return (id||'Q')+'-2';const n=String(+m[1]+1).padStart(m[1].length,'0');return id.slice(0,m.index)+n+id.slice(m.index+m[1].length);}
+
+let S=load(KEY_CUR)||sample();
+if(!S.active&&S.species[0])S.active=S.species[0].id;
+let records=load(KEY_REC)||[];
+let undoStack=[];
+let photoImg=null;
+let results={total:0,sp:{},patch:{}};
+
+function save(){if(!store(KEY_CUR,S)){const c=Object.assign({},S,{photo:null,photoOrig:null,photoCorners:null});store(KEY_CUR,c);toast('写真は大きすぎるため保存されません（描画データは保存済み）');}}
+
+/* ---------- toast ---------- */
+let tt;function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),1800);}
+
+/* ---------- density buttons ---------- */
+const seg=$('densSeg');
+DENS.forEach(d=>{const b=document.createElement('button');b.textContent=d;b.setAttribute('aria-label',d+'%');b.onclick=()=>{S.density=d;save();renderDens()};seg.appendChild(b);});
+function renderDens(keepInput){const custom=!DENS.includes(S.density);[...seg.children].forEach((b,i)=>b.setAttribute('aria-pressed',DENS[i]===S.density));
+  $('customWrap').classList.toggle('on',custom);if(!keepInput)$('densCustom').value=custom?S.density:'';}
+function clampD(v){v=Math.round(parseFloat(v)*10)/10;return (v>0&&v<=100)?v:null;}
+$('densCustom').addEventListener('input',e=>{const v=clampD(e.target.value);if(v!==null){S.density=v;save();renderDens(true);}});
+$('densCustom').addEventListener('focus',e=>{const v=clampD(e.target.value);if(v!==null){S.density=v;save();renderDens(true);}});
+$('densCustom').addEventListener('change',e=>{if(clampD(e.target.value)===null){e.target.value=DENS.includes(S.density)?'':S.density;toast('密度は0.1〜100%で入力してください');}});
+
+/* ---------- plot fields ---------- */
+const PRESETS=[[1,1],[2,2],[5,5],[10,10],[0.5,0.5]];
+PRESETS.forEach(([w,h])=>{const b=document.createElement('button');b.textContent=w+'×'+h+' m';b.onclick=()=>{S.plot.w=w;S.plot.h=h;fillFields();save();layout();compute();rewarp();};$('presets').appendChild(b);});
+function fillFields(){$('fId').value=S.plot.id;$('fDate').value=S.plot.date;$('fWho').value=S.plot.who||'';$('fW').value=S.plot.w;$('fH').value=S.plot.h;}
+$('fId').oninput=e=>{S.plot.id=e.target.value;save()};
+$('fDate').oninput=e=>{S.plot.date=e.target.value;save()};
+$('fWho').oninput=e=>{S.plot.who=e.target.value;save()};
+['fW','fH'].forEach(id=>$(id).addEventListener('change',e=>{const v=parseFloat(e.target.value);if(!(v>0)){fillFields();return;}S.plot[id==='fW'?'w':'h']=v;save();layout();compute();rewarp();}));
+
+/* ---------- canvas ---------- */
+const cv=$('cv'),ctx=cv.getContext('2d');
+let cssW=300,cssH=300,dpr=1;
+function layout(){
+  const stage=$('stage');const avail=stage.clientWidth;if(!avail)return;
+  const wide=window.innerWidth>900;
+  const maxH=wide?Math.max(320,window.innerHeight-190):Math.min(window.innerHeight*0.72,avail*1.6);
+  const ar=S.plot.w/S.plot.h;
+  let w=avail,h=w/ar;if(h>maxH){h=maxH;w=h*ar;}
+  cssW=Math.floor(w);cssH=Math.floor(h);dpr=Math.min(window.devicePixelRatio||1,3);
+  cv.style.width=cssW+'px';cv.style.height=cssH+'px';cv.width=Math.round(cssW*dpr);cv.height=Math.round(cssH*dpr);
+  const st=niceStep(Math.max(S.plot.w,S.plot.h)/10);
+  $('scaleTxt').textContent=fmtM(S.plot.w)+' m × '+fmtM(S.plot.h)+' m　面積 '+fmtNum(S.plot.w*S.plot.h)+' m²';
+  $('gridTxt').textContent='グリッド '+(st<1?Math.round(st*100)+' cm':st+' m')+'間隔';
+  draw();
+}
+function niceStep(x){const p=Math.pow(10,Math.floor(Math.log10(x)));const f=x/p;return (f<1.5?1:f<3.5?2:f<7.5?5:10)*p;}
+function fmtM(v){return (+v).toString();}
+function fmtNum(v){return v<10?v.toFixed(2):v.toFixed(1);}
+function css(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim();}
+function rgba(hex,a){const n=parseInt(hex.slice(1),16);return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`;}
+
+let live=null;
+function pathOf(c,pts,W,H){c.beginPath();pts.forEach((p,i)=>{const x=p[0]*W,y=p[1]*H;i?c.lineTo(x,y):c.moveTo(x,y)});c.closePath();}
+function draw(){
+  const W=cv.width,H=cv.height;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle=css('--paper');ctx.fillRect(0,0,W,H);
+  if(photoImg){ctx.globalAlpha=.85;ctx.drawImage(photoImg,0,0,W,H);ctx.globalAlpha=1;}
+  // grid
+  const st=niceStep(Math.max(S.plot.w,S.plot.h)/10);
+  const gMinor=css('--grid'),gMajor=css('--grid-major');
+  const lines=(len,px,vert)=>{const n=Math.round(len/st);for(let i=1;i<n+ (len/st-n>1e-6?1:0);i++){const v=i*st/len*px;const major=i%5===0;ctx.strokeStyle=major?gMajor:gMinor;ctx.lineWidth=(major?1.2:0.8)*dpr;ctx.beginPath();if(vert){ctx.moveTo(v,0);ctx.lineTo(v,H)}else{ctx.moveTo(0,v);ctx.lineTo(W,v)}ctx.stroke();}};
+  lines(S.plot.w,W,true);lines(S.plot.h,H,false);
+  // patches
+  const ink=css('--ink');
+  S.species.forEach(sp=>{
+    const act=sp.id===S.active;
+    sp.patches.forEach(p=>{
+      pathOf(ctx,p.pts,W,H);
+      ctx.fillStyle=rgba(sp.color,(0.10+0.50*p.d/100)*(act?1:0.8));ctx.fill();
+      ctx.strokeStyle=rgba(sp.color,act?1:.75);ctx.lineWidth=(act?2.4:1.5)*dpr;ctx.lineJoin='round';ctx.stroke();
+    });
+  });
+  // labels
+  ctx.font=`600 ${12*dpr}px "IBM Plex Mono",monospace`;ctx.textAlign='center';ctx.textBaseline='middle';
+  S.species.forEach(sp=>sp.patches.forEach(p=>{
+    let cx=0,cy=0;p.pts.forEach(q=>{cx+=q[0];cy+=q[1]});cx=cx/p.pts.length*W;cy=cy/p.pts.length*H;
+    const t=p.d+'%';ctx.lineWidth=3*dpr;ctx.strokeStyle=css('--paper');ctx.strokeText(t,cx,cy);ctx.fillStyle=ink;ctx.fillText(t,cx,cy);
+  }));
+  // live stroke
+  if(live&&live.length>1){
+    const sp=activeSp();ctx.beginPath();live.forEach((p,i)=>{i?ctx.lineTo(p[0]*W,p[1]*H):ctx.moveTo(p[0]*W,p[1]*H)});
+    ctx.strokeStyle=sp?sp.color:ink;ctx.lineWidth=2.4*dpr;ctx.setLineDash([]);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(live[live.length-1][0]*W,live[live.length-1][1]*H);ctx.lineTo(live[0][0]*W,live[0][1]*H);
+    ctx.setLineDash([5*dpr,5*dpr]);ctx.lineWidth=1.2*dpr;ctx.stroke();ctx.setLineDash([]);
+  }
+}
+let raf=0;function reqDraw(){if(!raf)raf=requestAnimationFrame(()=>{raf=0;draw()});}
+
+function activeSp(){return S.species.find(s=>s.id===S.active);}
+function ensureSp(){let sp=activeSp();if(!sp){sp=addSpecies('種'+(S.species.length+1));}return sp;}
+function toNorm(e){const r=cv.getBoundingClientRect();let x=(e.clientX-r.left)/r.width,y=(e.clientY-r.top)/r.height;return [Math.min(1,Math.max(0,x)),Math.min(1,Math.max(0,y))];}
+let drawingId=null;
+cv.addEventListener('pointerdown',e=>{
+  if($('penOnly').checked&&e.pointerType==='touch')return;
+  if(drawingId!==null)return;
+  e.preventDefault();drawingId=e.pointerId;cv.setPointerCapture(e.pointerId);live=[toNorm(e)];reqDraw();
+});
+cv.addEventListener('pointermove',e=>{
+  if(e.pointerId!==drawingId)return;
+  const evs=e.getCoalescedEvents?e.getCoalescedEvents():[e];
+  evs.forEach(ev=>{const p=toNorm(ev),l=live[live.length-1];if(Math.hypot(p[0]-l[0],p[1]-l[1])>0.002)live.push(p);});
+  reqDraw();
+});
+function endStroke(e){
+  if(e.pointerId!==drawingId)return;drawingId=null;
+  const pts=live;live=null;
+  if(pts&&pts.length>=3&&Math.abs(shoelace(pts))>0.0002){
+    const sp=ensureSp();const p={id:uid(),d:S.density,pts:simplify(pts)};sp.patches.push(p);undoStack.push(p.id);
+    if(S.sample)S.sample=false;save();compute();
+  }else draw();
+}
+cv.addEventListener('pointerup',endStroke);
+cv.addEventListener('pointercancel',e=>{if(e.pointerId===drawingId){drawingId=null;live=null;draw();}});
+function shoelace(p){let a=0;for(let i=0;i<p.length;i++){const j=(i+1)%p.length;a+=p[i][0]*p[j][1]-p[j][0]*p[i][1];}return a/2;}
+function simplify(p){if(p.length<400)return p.map(q=>[+q[0].toFixed(4),+q[1].toFixed(4)]);const k=Math.ceil(p.length/400);return p.filter((_,i)=>i%k===0).map(q=>[+q[0].toFixed(4),+q[1].toFixed(4)]);}
+
+/* ---------- area computation (raster, 600px long side) ---------- */
+const off=document.createElement('canvas');const octx=off.getContext('2d',{willReadFrequently:true});
+function compute(){
+  const R=600,ar=S.plot.w/S.plot.h;const mw=ar>=1?R:Math.round(R*ar),mh=ar>=1?Math.round(R/ar):R;
+  off.width=mw;off.height=mh;const N=mw*mh;
+  const tot=new Float32Array(N);results={total:0,sp:{},patch:{}};
+  S.species.forEach(sp=>{
+    const cov=new Float32Array(N);
+    sp.patches.forEach(p=>{
+      octx.clearRect(0,0,mw,mh);pathOf(octx,p.pts,mw,mh);octx.fillStyle='#000';octx.fill('nonzero');
+      const a=octx.getImageData(0,0,mw,mh).data;let c=0;
+      for(let i=0,j=3;i<N;i++,j+=4){if(a[j]>127){c++;if(p.d>cov[i])cov[i]=p.d;}}
+      results.patch[p.id]=c/N*100;
+    });
+    let s=0;for(let i=0;i<N;i++){s+=cov[i];if(cov[i]>tot[i])tot[i]=cov[i];}
+    results.sp[sp.id]=s/N;
+  });
+  let t=0;for(let i=0;i<N;i++)t+=tot[i];results.total=t/N;
+  draw();renderList();
+}
+
+/* ---------- species list ---------- */
+function bb(c){if(c>75)return'5';if(c>50)return'4';if(c>25)return'3';if(c>10)return'2';if(c>=1)return'1';if(c>0)return'+';return'—';}
+function m2(pct){const v=pct/100*S.plot.w*S.plot.h;return v<1?v.toFixed(3):v.toFixed(2);}
+function addSpecies(name){const used=S.species.map(s=>s.color);const color=COLORS.find(c=>!used.includes(c))||COLORS[S.species.length%COLORS.length];const sp={id:uid(),name,color,patches:[]};S.species.push(sp);S.active=sp.id;save();renderList();draw();return sp;}
+function addOrActivate(name){const ex=S.species.find(s=>s.name===name);if(ex){S.active=ex.id;save();renderList();draw();toast(name+' を描画中の種にしました');return ex;}const sp=addSpecies(name);toast(name+' を追加しました');return sp;}
+/* ---- species master list ---- */
+let master=(()=>{const m=load('qcover.splist');return Array.isArray(m)&&m.length?m:DEFAULT_SP.slice();})();
+function kana(t){return String(t).normalize('NFKC').replace(/[ぁ-ゖ]/g,c=>String.fromCharCode(c.charCodeAt(0)+0x60)).toLowerCase().replace(/\s+/g,'');}
+function matchList(q){const k=kana(q);if(!k)return[];const pre=[],mid=[];master.forEach(n=>{const x=kana(n);if(x.startsWith(k))pre.push(n);else if(x.includes(k))mid.push(n);});return pre.concat(mid);}
+function renderSugg(){
+  const q=$('newSp').value.trim();const box=$('sugg');box.innerHTML='';if(!q)return;
+  const m=matchList(q).slice(0,12);
+  m.forEach(n=>{const b=document.createElement('button');b.textContent=n;b.onclick=()=>{addOrActivate(n);$('newSp').value='';renderSugg();};box.appendChild(b);});
+  if(!master.includes(q)){const b=document.createElement('button');b.className='new';b.textContent='「'+q+'」をこのまま追加';b.onclick=()=>{$('addSpBtn').click();};box.appendChild(b);}
+}
+$('newSp').addEventListener('input',renderSugg);
+$('addSpBtn').onclick=()=>{const v=$('newSp').value.trim();if(!v){addSpecies('種'+(S.species.length+1));}else{const m=matchList(v);addOrActivate(m.length&&kana(m[0])===kana(v)?m[0]:v);}$('newSp').value='';renderSugg();};
+$('newSp').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.isComposing){e.preventDefault();$('addSpBtn').click();}});
+const GYOU=[['ア','アイウエオァィゥェォヴ'],['カ','カキクケコガギグゲゴ'],['サ','サシスセソザジズゼゾ'],['タ','タチツテトダヂヅデドッ'],['ナ','ナニヌネノ'],['ハ','ハヒフヘホバビブベボパピプペポ'],['マ','マミムメモ'],['ヤ','ヤユヨャュョ'],['ラ','ラリルレロ'],['ワ','ワヲン']];
+function gyouOf(n){const c=kana(n).charAt(0).toUpperCase();const g=GYOU.find(x=>x[1].includes(c));return g?g[0]+'行':'学名・その他';}
+function renderPicker(){
+  const q=$('pickSearch').value.trim();const list=q?matchList(q):master.slice();
+  const body=$('pickBody');body.innerHTML='';const groups=new Map();
+  list.forEach(n=>{const g=q?'検索結果':gyouOf(n);if(!groups.has(g))groups.set(g,[]);groups.get(g).push(n);});
+  const bar=$('gyouBar');bar.innerHTML='';bar.hidden=!!q;
+  const used=new Set(S.species.map(s=>s.name));
+  groups.forEach((arr,g)=>{
+    const sec=document.createElement('section');sec.className='sgroup';const h=document.createElement('h3');h.textContent=g+'（'+arr.length+'）';sec.appendChild(h);
+    const grid=document.createElement('div');grid.className='sgrid';
+    arr.forEach(n=>{const b=document.createElement('button');b.textContent=n;b.setAttribute('aria-pressed',used.has(n));
+      b.onclick=()=>{addOrActivate(n);b.setAttribute('aria-pressed','true');};grid.appendChild(b);});
+    sec.appendChild(grid);body.appendChild(sec);
+    if(!q){const jb=document.createElement('button');jb.textContent=g.replace('行','').replace('学名・その他','他');jb.onclick=()=>{body.scrollTo({top:sec.offsetTop-body.offsetTop,behavior:'smooth'});};bar.appendChild(jb);}
+  });
+  if(!list.length){body.innerHTML='<p class="muted">該当する種がありません。計測画面の入力欄から、新しい名前で追加できます。</p>';}
+}
+$('openPicker').onclick=()=>{$('pickSearch').value='';$('picker').hidden=false;$('pickMain').hidden=false;$('pickEditor').hidden=true;document.body.style.overflow='hidden';renderPicker();};
+$('pickClose').onclick=()=>{$('picker').hidden=true;document.body.style.overflow='';};
+$('pickSearch').addEventListener('input',renderPicker);
+$('pickEdit').onclick=()=>{$('pickMain').hidden=true;$('pickEditor').hidden=false;$('spEditTa').value=master.join('\n');};
+$('pickEditCancel').onclick=()=>{$('pickMain').hidden=false;$('pickEditor').hidden=true;};
+$('pickEditSave').onclick=()=>{
+  const seen=new Set();const arr=[];
+  $('spEditTa').value.split(/\r?\n/).forEach(l=>{const n=l.replace(/^\s*\d+[\s.．、,，:：\t]*/,'').trim();if(n&&!seen.has(n)){seen.add(n);arr.push(n);}});
+  if(!arr.length){toast('1種以上入力してください');return;}
+  master=arr;if(!store('qcover.splist',master))toast('保存できませんでした');else toast('登録種リストを保存しました（'+arr.length+'種）');
+  $('pickMain').hidden=false;$('pickEditor').hidden=true;renderPicker();
+};
+armed($('pickDefault'),'もう一度押すと初期リストに戻す',()=>{$('spEditTa').value=DEFAULT_SP.join('\n');toast('初期リストを読み込みました。「保存」で確定します');});
+const openSp=new Set();
+function renderList(){
+  const L=$('spList');L.innerHTML='';
+  $('totalNum').textContent=results.total.toFixed(1)+'%';
+  $('totalSub').textContent='植被率（全種の重なりを除く）・'+m2(results.total)+' m²';
+  if(!S.species.length){L.innerHTML='<p class="muted" style="margin:0">種名を追加してから方形区内を囲んでください。追加せずに描くと「種1」が作られます。</p>';}
+  S.species.forEach(sp=>{
+    const c=results.sp[sp.id]||0;
+    const el=document.createElement('div');el.className='sp'+(sp.id===S.active?' active':'');
+    el.innerHTML=`<div class="sp-head"><span class="chip" style="background:${sp.color}"></span>
+      <input class="sp-name" id="nm-${sp.id}" value="" aria-label="種名">
+      <div class="sp-val"><b>${c.toFixed(1)}%</b><span class="cls" title="被度階級（目安）">${bb(c)}</span><small>${m2(c)} m²・${sp.patches.length}範囲</small></div></div>`;
+    const nm=el.querySelector('.sp-name');nm.value=sp.name;
+    nm.oninput=()=>{sp.name=nm.value;save();updateActiveNote();};
+    nm.onclick=ev=>ev.stopPropagation();
+    nm.onfocus=()=>{if(S.active!==sp.id){S.active=sp.id;save();[...L.children].forEach(x=>x.classList.remove('active'));el.classList.add('active');draw();updateActiveNote();}};
+    el.querySelector('.sp-head').onclick=()=>{S.active=sp.id;openSp.has(sp.id)?openSp.delete(sp.id):openSp.add(sp.id);save();renderList();draw();};
+    if(openSp.has(sp.id)){
+      const box=document.createElement('div');box.className='patches';
+      sp.patches.forEach((p,i)=>{
+        const a=results.patch[p.id]||0;
+        const r=document.createElement('div');r.className='prow';
+        r.innerHTML=`<span>#${i+1}</span><span class="calc">${a.toFixed(1)}% × </span>`;
+        const sel=document.createElement('span');sel.style.whiteSpace='nowrap';
+        const inp=document.createElement('input');inp.type='number';inp.className='pd';inp.min='0.1';inp.max='100';inp.step='0.1';inp.inputMode='decimal';inp.value=p.d;inp.setAttribute('aria-label','密度（%）');inp.setAttribute('list','densList');
+        inp.onchange=()=>{const v=clampD(inp.value);if(v===null){inp.value=p.d;toast('密度は0.1〜100%で入力してください');return;}p.d=v;save();compute();};
+        sel.append(inp,document.createTextNode(' %'));
+        const x=document.createElement('button');x.className='x';x.textContent='×';x.setAttribute('aria-label','この範囲を削除');
+        x.onclick=()=>{sp.patches=sp.patches.filter(q=>q!==p);save();compute();};
+        r.appendChild(sel);r.appendChild(x);box.appendChild(r);
+      });
+      const del=document.createElement('button');del.className='btn warn';del.style.marginTop='4px';del.textContent='この種を削除';
+      armed(del,'もう一度押すと削除',()=>{S.species=S.species.filter(s=>s!==sp);if(S.active===sp.id)S.active=S.species[0]?S.species[0].id:null;save();compute();updateActiveNote();});
+      if(!sp.patches.length){const m=document.createElement('p');m.className='muted';m.style.margin='0';m.textContent='まだ範囲がありません。';box.appendChild(m);}
+      box.appendChild(del);el.appendChild(box);
+    }
+    L.appendChild(el);
+  });
+  updateActiveNote();
+  $('sampleBanner').hidden=!S.sample;
+}
+function updateActiveNote(){const sp=activeSp();$('activeNote').innerHTML=sp?`<span class="chip" style="background:${sp.color}"></span><span>描画中：<b></b></span>`:'<span class="muted">種を選ぶか追加してください</span>';if(sp)$('activeNote').querySelector('b').textContent=sp.name||'（名称未入力）';}
+function armed(btn,msg,fn){const orig=btn.textContent;let t=null;btn.onclick=ev=>{ev&&ev.stopPropagation();if(t){clearTimeout(t);t=null;btn.textContent=orig;fn();return;}btn.textContent=msg;t=setTimeout(()=>{t=null;btn.textContent=orig;},3000);};}
+
+/* ---------- toolbar ---------- */
+$('undoBtn').onclick=()=>{while(undoStack.length){const id=undoStack.pop();for(const sp of S.species){const i=sp.patches.findIndex(p=>p.id===id);if(i>=0){sp.patches.splice(i,1);save();compute();return;}}}
+  // fall back: remove last patch of active species
+  const sp=activeSp();if(sp&&sp.patches.length){sp.patches.pop();save();compute();}else toast('元に戻す操作はありません');};
+try{$('penOnly').checked=!!load('qcover.pen');}catch(e){}
+$('penOnly').onchange=e=>store('qcover.pen',e.target.checked);
+$('photoIn').onchange=e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{const im=new Image();im.onload=()=>{
+  const c=document.createElement('canvas');const k=Math.min(1,1800/Math.max(im.width,im.height));c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext('2d').drawImage(im,0,0,c.width,c.height);
+  openCrop(c.toDataURL('image/jpeg',.85),null);};im.onerror=()=>toast('この画像は読み込めませんでした');im.src=rd.result;};rd.readAsDataURL(f);e.target.value='';};
+$('photoClear').onclick=()=>{S.photo=null;S.photoOrig=null;S.photoCorners=null;photoImg=null;save();setPhoto();draw();};
+$('photoAdjust').onclick=()=>{if(S.photoOrig)openCrop(S.photoOrig,S.photoCorners);};
+function setPhoto(){$('photoAdjust').hidden=!S.photoOrig;if(!S.photo){photoImg=null;$('photoClear').hidden=true;return;}const im=new Image();im.onload=()=>{photoImg=im;$('photoClear').hidden=false;draw();};im.src=S.photo;}
+
+/* ---------- crop / perspective correction ---------- */
+const CR={img:null,src:null,pts:null,drag:-1,off:[0,0],scale:1,ox:0,oy:0,cw:0,ch:0,pid:null};
+const ccv=$('cropCv'),cctx=ccv.getContext('2d');
+const CLABEL=['左上','右上','右下','左下'];
+function defCorners(){return [[.12,.12],[.88,.12],[.88,.88],[.12,.88]];}
+function openCrop(src,corners){
+  const im=new Image();im.onload=()=>{CR.img=im;CR.src=src;CR.pts=corners?corners.map(p=>p.slice()):defCorners();
+    $('crop').hidden=false;document.body.style.overflow='hidden';cropLayout();};im.src=src;
+}
+function closeCrop(){$('crop').hidden=true;document.body.style.overflow='';CR.img=null;}
+function cropLayout(){
+  if(!CR.img)return;const st=$('cropStage');const aw=st.clientWidth,ah=st.clientHeight;const d=Math.min(window.devicePixelRatio||1,3);
+  const k=Math.min(aw/CR.img.width,ah/CR.img.height);const w=Math.floor(CR.img.width*k),h=Math.floor(CR.img.height*k);
+  ccv.style.width=w+'px';ccv.style.height=h+'px';ccv.width=Math.round(w*d);ccv.height=Math.round(h*d);CR.cw=w;CR.ch=h;CR.d=d;cropDraw();
+}
+function homog(q){ // unit square (u,v) -> quad q[0..3] (TL,TR,BR,BL)
+  const [x0,y0]=q[0],[x1,y1]=q[1],[x2,y2]=q[2],[x3,y3]=q[3];
+  const dx1=x1-x2,dx2=x3-x2,dx3=x0-x1+x2-x3,dy1=y1-y2,dy2=y3-y2,dy3=y0-y1+y2-y3;
+  let g=0,h=0;if(Math.abs(dx3)>1e-12||Math.abs(dy3)>1e-12){const det=dx1*dy2-dx2*dy1;g=(dx3*dy2-dx2*dy3)/det;h=(dx1*dy3-dx3*dy1)/det;}
+  const a=x1-x0+g*x1,b=x3-x0+h*x3,c=x0,dd=y1-y0+g*y1,e=y3-y0+h*y3,f=y0;
+  return (u,v)=>{const w=g*u+h*v+1;return [(a*u+b*v+c)/w,(dd*u+e*v+f)/w];};
+}
+function cropDraw(){
+  const W=ccv.width,H=ccv.height,d=CR.d;cctx.clearRect(0,0,W,H);cctx.drawImage(CR.img,0,0,W,H);
+  const P=CR.pts.map(p=>[p[0]*W,p[1]*H]);
+  cctx.save();cctx.beginPath();cctx.rect(0,0,W,H);cctx.moveTo(P[0][0],P[0][1]);for(let i=3;i>=1;i--)cctx.lineTo(P[i][0],P[i][1]);cctx.closePath();
+  cctx.fillStyle='rgba(0,0,0,.5)';cctx.fill('evenodd');cctx.restore();
+  // preview grid inside quad
+  const m=homog(P);cctx.strokeStyle='rgba(255,255,255,.7)';cctx.lineWidth=1*d;
+  for(let i=1;i<10;i++){const t=i/10;cctx.beginPath();for(let j=0;j<=20;j++){const p=m(t,j/20);j?cctx.lineTo(p[0],p[1]):cctx.moveTo(p[0],p[1]);}cctx.stroke();
+    cctx.beginPath();for(let j=0;j<=20;j++){const p=m(j/20,t);j?cctx.lineTo(p[0],p[1]):cctx.moveTo(p[0],p[1]);}cctx.stroke();}
+  cctx.beginPath();P.forEach((p,i)=>i?cctx.lineTo(p[0],p[1]):cctx.moveTo(p[0],p[1]));cctx.closePath();cctx.strokeStyle='#7CF29A';cctx.lineWidth=2.5*d;cctx.stroke();
+  cctx.font=`700 ${12*d}px sans-serif`;cctx.textAlign='center';cctx.textBaseline='middle';
+  P.forEach((p,i)=>{cctx.beginPath();cctx.arc(p[0],p[1],(CR.drag===i?16:13)*d,0,Math.PI*2);cctx.fillStyle=i===0?'rgba(255,196,0,.9)':'rgba(124,242,154,.85)';cctx.fill();cctx.strokeStyle='#0B1A10';cctx.lineWidth=2*d;cctx.stroke();
+    const lx=p[0]+(i===0||i===3?-1:1)*30*d,ly=p[1]+(i<2?-1:1)*24*d;const tx=Math.min(W-24*d,Math.max(24*d,lx)),ty=Math.min(H-12*d,Math.max(12*d,ly));
+    cctx.lineWidth=4*d;cctx.strokeStyle='rgba(0,0,0,.75)';cctx.strokeText(CLABEL[i],tx,ty);cctx.fillStyle='#fff';cctx.fillText(CLABEL[i],tx,ty);});
+  // loupe
+  if(CR.drag>=0){const p=P[CR.drag];const r=62*d,z=3;const lx=(p[0]<W/2?W-r-10*d:r+10*d),ly=r+10*d;
+    cctx.save();cctx.beginPath();cctx.arc(lx,ly,r,0,Math.PI*2);cctx.clip();
+    const sx=CR.img.width/W,sy=CR.img.height/H;const sw=2*r/z;
+    cctx.drawImage(CR.img,(p[0]-sw/2)*sx,(p[1]-sw/2)*sy,sw*sx,sw*sy,lx-r,ly-r,2*r,2*r);
+    cctx.strokeStyle='#ff3b30';cctx.lineWidth=1.5*d;cctx.beginPath();cctx.moveTo(lx-r,ly);cctx.lineTo(lx+r,ly);cctx.moveTo(lx,ly-r);cctx.lineTo(lx,ly+r);cctx.stroke();cctx.restore();
+    cctx.beginPath();cctx.arc(lx,ly,r,0,Math.PI*2);cctx.strokeStyle='#fff';cctx.lineWidth=3*d;cctx.stroke();}
+}
+function cpos(e){const r=ccv.getBoundingClientRect();return [(e.clientX-r.left)/r.width,(e.clientY-r.top)/r.height];}
+ccv.addEventListener('pointerdown',e=>{
+  if(CR.pid!==null)return;const p=cpos(e);let best=-1,bd=1e9;
+  CR.pts.forEach((q,i)=>{const dx=(q[0]-p[0])*CR.cw,dy=(q[1]-p[1])*CR.ch;const dd=Math.hypot(dx,dy);if(dd<bd){bd=dd;best=i;}});
+  if(bd>60)return;e.preventDefault();CR.pid=e.pointerId;ccv.setPointerCapture(e.pointerId);CR.drag=best;CR.off=[CR.pts[best][0]-p[0],CR.pts[best][1]-p[1]];cropDraw();
+});
+ccv.addEventListener('pointermove',e=>{if(e.pointerId!==CR.pid)return;const p=cpos(e);CR.pts[CR.drag]=[Math.min(1,Math.max(0,p[0]+CR.off[0])),Math.min(1,Math.max(0,p[1]+CR.off[1]))];cropDraw();});
+function cropUp(e){if(e.pointerId!==CR.pid)return;CR.pid=null;CR.drag=-1;cropDraw();}
+ccv.addEventListener('pointerup',cropUp);ccv.addEventListener('pointercancel',cropUp);
+$('cropRot').onclick=()=>{CR.pts=[CR.pts[3],CR.pts[0],CR.pts[1],CR.pts[2]];cropDraw();};
+$('cropReset').onclick=()=>{CR.pts=defCorners();cropDraw();};
+$('cropFull').onclick=()=>{CR.pts=[[0,0],[1,0],[1,1],[0,1]];cropDraw();};
+$('cropCancel').onclick=closeCrop;
+$('cropOk').onclick=()=>{
+  const q=CR.pts;const area=Math.abs(shoelace(q));if(area<0.01){toast('四隅の範囲が小さすぎます');return;}
+  $('cropBusy').hidden=false;
+  setTimeout(()=>{try{
+    S.photoOrig=CR.src;S.photoCorners=q.map(p=>p.slice());S.photo=warp(CR.img,q);setPhoto();save();closeCrop();toast('背景写真を方形区に合わせました');
+  }catch(err){toast('補正できませんでした');}
+  $('cropBusy').hidden=true;},30);
+};
+function warp(img,q){
+  const iw=img.width,ih=img.height;const sc=document.createElement('canvas');sc.width=iw;sc.height=ih;const sx=sc.getContext('2d');sx.drawImage(img,0,0);
+  const src=sx.getImageData(0,0,iw,ih).data;
+  const ar=S.plot.w/S.plot.h,L=1400;const W=ar>=1?L:Math.round(L*ar),H=ar>=1?Math.round(L/ar):L;
+  const oc=document.createElement('canvas');oc.width=W;oc.height=H;const ox=oc.getContext('2d');const out=ox.createImageData(W,H);const o=out.data;
+  const m=homog(q.map(p=>[p[0]*iw,p[1]*ih]));
+  for(let y=0;y<H;y++){const v=(y+.5)/H;for(let x=0;x<W;x++){const u=(x+.5)/W;let [fx,fy]=m(u,v);fx-=.5;fy-=.5;
+    let x0=Math.floor(fx),y0=Math.floor(fy);const ax=fx-x0,ay=fy-y0;
+    const x1=Math.min(iw-1,Math.max(0,x0+1)),y1=Math.min(ih-1,Math.max(0,y0+1));x0=Math.min(iw-1,Math.max(0,x0));y0=Math.min(ih-1,Math.max(0,y0));
+    const i00=(y0*iw+x0)*4,i10=(y0*iw+x1)*4,i01=(y1*iw+x0)*4,i11=(y1*iw+x1)*4,oi=(y*W+x)*4;
+    for(let c=0;c<3;c++)o[oi+c]=(src[i00+c]*(1-ax)+src[i10+c]*ax)*(1-ay)+(src[i01+c]*(1-ax)+src[i11+c]*ax)*ay;o[oi+3]=255;}}
+  ox.putImageData(out,0,0);return oc.toDataURL('image/jpeg',.82);
+}
+function rewarp(){if(!S.photoOrig||!S.photoCorners)return;const im=new Image();im.onload=()=>{S.photo=warp(im,S.photoCorners);setPhoto();save();};im.src=S.photoOrig;}
+
+/* ---------- records & CSV ---------- */
+const HEAD=['調査区ID','調査日','調査者','幅(m)','奥行(m)','種名','被度(%)','面積(m2)','被度階級','範囲数','範囲別(面積%×密度%)'];
+function q(v){v=String(v??'');return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;}
+function rowsFor(plot,species,res){
+  const rows=species.map(sp=>{const c=res.sp[sp.id]||0;return [plot.id,plot.date,plot.who||'',plot.w,plot.h,sp.name,c.toFixed(1),(c/100*plot.w*plot.h).toFixed(3),bb(c),sp.patches.length,sp.patches.map(p=>(res.patch[p.id]||0).toFixed(1)+'×'+p.d).join(' ')];});
+  rows.push([plot.id,plot.date,plot.who||'',plot.w,plot.h,'（植被率）',res.total.toFixed(1),(res.total/100*plot.w*plot.h).toFixed(3),bb(res.total),'','']);
+  return rows;
+}
+function csvOf(rows){return [HEAD,...rows].map(r=>r.map(q).join(',')).join('\n');}
+async function copyText(t,outId){const out=$(outId||'csvOut');try{await navigator.clipboard.writeText(t);out.hidden=true;toast('CSVをコピーしました');}catch(e){out.hidden=false;out.value=t;out.focus();out.select();toast('下の欄を選択してコピーしてください');}}
+$('csvBtn').onclick=()=>copyText(csvOf(rowsFor(S.plot,S.species,results)));
+$('csvAllBtn').onclick=()=>{if(!records.length){toast('保存した調査がありません');return;}copyText(csvOf(records.flatMap(r=>rowsFor(r.plot,r.species,r.results))),'csvOutAll');};
+$('saveBtn').onclick=()=>{
+  if(!S.species.length){toast('保存する種がありません');return;}
+  const rec={key:uid(),savedAt:new Date().toISOString(),plot:JSON.parse(JSON.stringify(S.plot)),species:JSON.parse(JSON.stringify(S.species)),results:JSON.parse(JSON.stringify(results))};
+  const i=records.findIndex(r=>r.plot.id===rec.plot.id&&r.plot.date===rec.plot.date);
+  if(i>=0)records[i]=rec;else records.unshift(rec);
+  if(!store(KEY_REC,records))toast('保存できませんでした（ブラウザの保存領域）');else toast((i>=0?'上書き保存しました：':'保存しました：')+rec.plot.id);
+  renderRecs();
+};
+armed($('newBtn'),'もう一度押すと画面を消去',()=>{S=blank(S);undoStack=[];photoImg=null;setPhoto();save();fillFields();layout();compute();renderDens();toast('新しい調査を始めました');});
+$('clearSample').onclick=()=>{S=blank(null);S.plot.id='Q-01';save();fillFields();layout();compute();};
+function renderRecs(){
+  const L=$('recList');L.innerHTML='';$('recCount').textContent=records.length?records.length:'';
+  if(!records.length){L.innerHTML='<p class="muted" style="margin:0">まだ保存した調査はありません。計測画面の「この調査を保存」で追加されます（この端末のみに保存）。</p>';return;}
+  records.forEach(r=>{
+    const el=document.createElement('article');el.className='rcard';
+    const hd=document.createElement('div');hd.className='rh';
+    hd.innerHTML='<div><b></b><div class="meta"></div></div><div style="text-align:right"><div class="tot"></div><div class="meta">植被率</div></div>';
+    hd.querySelector('b').textContent=r.plot.id||'（ID未入力）';
+    hd.querySelector('.meta').textContent=`${r.plot.date||''}・${r.plot.w}×${r.plot.h} m${r.plot.who?'・'+r.plot.who:''}`;
+    hd.querySelector('.tot').textContent=r.results.total.toFixed(1)+'%';
+    const wrap=document.createElement('div');wrap.style.overflowX='auto';
+    const t=document.createElement('table');t.className='tbl';
+    t.innerHTML='<thead><tr><th>種名</th><th style="text-align:right">被度%</th><th style="text-align:right">m²</th><th style="text-align:right">階級</th></tr></thead>';
+    const tb=document.createElement('tbody');
+    r.species.forEach(sp=>{const c=r.results.sp[sp.id]||0;const tr=document.createElement('tr');
+      tr.innerHTML=`<td><span class="chip" style="background:${sp.color};vertical-align:-2px;margin-right:6px"></span><span></span></td><td class="n">${c.toFixed(1)}</td><td class="n">${(c/100*r.plot.w*r.plot.h).toFixed(3)}</td><td class="n">${bb(c)}</td>`;
+      tr.querySelector('td span:last-child').textContent=sp.name;tb.appendChild(tr);});
+    t.appendChild(tb);wrap.appendChild(t);
+    const act=document.createElement('div');act.className='actions';
+    const ld=document.createElement('button');ld.className='btn primary';ld.textContent='開いて編集';
+    ld.onclick=()=>{S={sample:false,plot:JSON.parse(JSON.stringify(r.plot)),density:S.density,species:JSON.parse(JSON.stringify(r.species)),active:r.species[0]?r.species[0].id:null,photo:null};photoImg=null;setPhoto();undoStack=[];save();fillFields();showView('measure');compute();toast(r.plot.id+'を開きました');};
+    const cp=document.createElement('button');cp.className='btn';cp.textContent='CSVコピー';
+    cp.onclick=()=>copyText(csvOf(rowsFor(r.plot,r.species,r.results)),'csvOutAll');
+    const del=document.createElement('button');del.className='btn warn';del.textContent='削除';
+    armed(del,'もう一度押すと削除',()=>{records=records.filter(x=>x!==r);store(KEY_REC,records);renderRecs();toast('削除しました');});
+    act.append(ld,cp,del);
+    const sv=document.createElement('div');sv.className='meta';try{sv.textContent='保存 '+new Date(r.savedAt).toLocaleString('ja-JP');}catch(e){}
+    el.append(hd,wrap,act,sv);L.appendChild(el);
+  });
+}
+function showView(v){
+  const rec=v==='records';
+  $('viewMeasure').hidden=rec;$('viewRecords').hidden=!rec;
+  $('tabMeasure').setAttribute('aria-pressed',!rec);$('tabRecords').setAttribute('aria-pressed',rec);
+  try{history.replaceState(null,'',rec?'#records':'#measure');}catch(e){}
+  if(rec)renderRecs();else layout();
+  window.scrollTo({top:0});
+}
+$('tabMeasure').onclick=()=>showView('measure');
+$('tabRecords').onclick=()=>showView('records');
+
+/* ---------- boot ---------- */
+fillFields();renderDens();setPhoto();renderRecs();
+if(location.hash==='#records')showView('records');else layout();compute();
+let rz;window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(()=>{layout();cropLayout();},120);});
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change',draw);
+new MutationObserver(draw).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+})();
+</script>
+<script>
+if('serviceWorker' in navigator && location.protocol.startsWith('http')){navigator.serviceWorker.register('sw.js').catch(()=>{});}
+</script>
+</body>
+</html>
