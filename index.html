@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
 <title>コドラート被度計</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -33,7 +33,8 @@
   --bg:#111713; --surface:#18201B; --surface2:#222C25; --ink:#E3EAE4; --muted:#93A398; --line:#2F3B32;
   --accent:#7CC293; --accent-ink:#0E1A12; --paper:#1B231D; --grid:#2C372F; --grid-major:#4A5A4E; --danger:#E27A66;
 }
-*{box-sizing:border-box}
+*{box-sizing:border-box;touch-action:manipulation}
+html,body{touch-action:manipulation;-webkit-text-size-adjust:100%}
 [hidden]{display:none!important}
 body{background:var(--bg);color:var(--ink);font-family:var(--jp);font-size:15px;line-height:1.55;padding:0 16px;-webkit-tap-highlight-color:transparent}
 .wrap{max-width:1280px;margin:0 auto;padding-block:14px 40px}
@@ -66,7 +67,7 @@ canvas#cv{touch-action:none;display:block;border:2px solid var(--ink);border-rad
 .fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .fields label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted)}
 .fields .full{grid-column:1/-1}
-input,select{font:15px var(--jp);color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:9px 10px;min-height:42px;width:100%}
+input,select{font:16px var(--jp);color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:9px 10px;min-height:42px;width:100%}
 input[type=number]{font-family:var(--mono)}
 .presets{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
 .presets button{font:600 13px var(--mono);padding:6px 10px;border-radius:8px;border:1px solid var(--line);background:var(--paper);color:var(--ink);cursor:pointer;min-height:36px}
@@ -89,6 +90,7 @@ input[type=number]{font-family:var(--mono)}
 .prow .x{border:0;background:transparent;color:var(--danger);font-size:18px;width:34px;height:34px;cursor:pointer}
 .prow .calc{color:var(--muted)}
 .addsp{display:flex;gap:8px;margin-top:10px}
+.addsp .btn{white-space:nowrap}
 .actions{display:flex;gap:8px;flex-wrap:wrap}
 .actions .btn{flex:1 1 140px}
 .banner{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;background:var(--surface2);border-radius:10px;padding:10px 12px;font-size:13px;margin-bottom:10px}
@@ -149,6 +151,37 @@ details.help ul{margin:8px 0 0;padding-left:18px;font-size:13px;color:var(--mute
 .sgrid button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
 .sgrid button[aria-pressed="true"]::before{content:"✓ "}
 #spEditTa{width:100%;flex:1;min-height:200px;font:15px/1.6 var(--jp);background:var(--paper);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:10px}
+.prow input.pd,.custom input{font-size:16px}
+#drawSec.fs{position:fixed;inset:0;z-index:30;background:var(--bg);display:flex;flex-direction:column;padding:calc(8px + env(safe-area-inset-top,0px)) 12px calc(8px + env(safe-area-inset-bottom,0px));overflow:hidden}
+#drawSec.fs .tools{margin-bottom:6px;gap:8px}
+#drawSec.fs .stage{flex:1 1 0;min-height:0;align-items:center}
+#drawSec.fs .scale{margin-top:4px}
+#drawSec.fs .fs-hide{display:none!important}
+.fs-only{display:none!important}
+#drawSec.fs .fs-only{display:flex!important}
+.fs-stat{align-items:center;gap:10px;font-family:var(--mono);font-size:13px;color:var(--muted);flex-wrap:wrap}
+.fs-stat b{color:var(--ink);font-size:15px}
+#spSel{width:auto;max-width:220px;min-height:44px;font-weight:700}
+.sp-extra{display:flex;align-items:center;gap:8px;padding:0 10px 10px 34px;font-size:13px;color:var(--muted);flex-wrap:wrap}
+.sp-extra input{width:96px;min-height:36px;padding:4px 8px;font-family:var(--mono);text-align:right}
+.mgrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.mgrid label{display:flex;flex-direction:column;gap:3px;font-size:11px;color:var(--muted);text-align:center}
+.mgrid input{text-align:center;padding:8px 4px;font-family:var(--mono)}
+.mres{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
+.mres div{background:var(--paper);border:1px solid var(--line);border-radius:8px;padding:8px;display:flex;flex-direction:column;gap:2px}
+.mres span{font-size:11px;color:var(--muted)}
+.mres b{font:600 18px var(--mono);font-variant-numeric:tabular-nums}
+.mres div.main{border-color:var(--accent)}
+details.calib{margin-top:10px;border-top:1px dashed var(--line);padding-top:8px}
+details.calib summary{cursor:pointer;font-size:13px;font-weight:700;min-height:32px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+details.calib summary code{font:500 12px var(--mono);color:var(--accent);font-weight:600}
+.cgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:8px}
+.cgrid label,.cfull{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--muted)}
+.cfull{margin-top:8px}
+.ctest{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:13px;flex-wrap:wrap}
+.ctest input{width:90px;font-family:var(--mono)}
+.ctest b{font-family:var(--mono)}
+.cerr{color:var(--danger);font-size:12px}
 @media (prefers-reduced-motion:reduce){.toast{transition:none}}
 </style>
 
@@ -169,7 +202,7 @@ details.help ul{margin:8px 0 0;padding-left:18px;font-size:13px;color:var(--mute
   </div>
 
   <div class="app">
-    <section>
+    <section id="drawSec">
       <div class="tools">
         <div>
           <div class="lbl">描く範囲の密度</div>
@@ -180,15 +213,22 @@ details.help ul{margin:8px 0 0;padding-left:18px;font-size:13px;color:var(--mute
         </div>
       </div>
       <div class="tools">
-        <div class="active-note" id="activeNote"></div>
+        <div class="active-note" id="activeNote">
+          <span class="chip" id="spChip"></span>
+          <select id="spSel" aria-label="描画する種"></select>
+        </div>
         <span style="flex:1"></span>
-        <label class="toggle"><input type="checkbox" id="penOnly"> ペンのみで描画</label>
+        <label class="toggle"><input type="checkbox" id="penOnly"> ペンのみ</label>
         <button class="btn" id="undoBtn">元に戻す</button>
-        <label class="btn" for="photoIn" style="display:inline-flex;align-items:center">背景写真</label>
-        <input type="file" id="photoIn" accept="image/*" hidden>
-        <button class="btn" id="photoAdjust" hidden>写真を調整</button>
-        <button class="btn" id="photoClear" hidden>写真を外す</button>
+        <span class="fs-hide" style="display:contents">
+          <label class="btn" for="photoIn" style="display:inline-flex;align-items:center">背景写真</label>
+          <input type="file" id="photoIn" accept="image/*" hidden>
+          <button class="btn" id="photoAdjust" hidden>写真を調整</button>
+          <button class="btn" id="photoClear" hidden>写真を外す</button>
+        </span>
+        <button class="btn primary" id="fsBtn">全画面で描く</button>
       </div>
+      <div class="tools fs-only fs-stat" id="fsStat"></div>
       <div class="stage" id="stage"><canvas id="cv" aria-label="方形区の描画エリア"></canvas></div>
       <div class="scale"><span id="scaleTxt"></span><span id="gridTxt"></span></div>
     </section>
@@ -204,6 +244,31 @@ details.help ul{margin:8px 0 0;padding-left:18px;font-size:13px;color:var(--mute
           <label>奥行 (m)<input id="fH" type="number" min="0.1" step="0.1" inputmode="decimal"></label>
         </div>
         <div class="presets" id="presets"></div>
+      </div>
+
+      <div class="box">
+        <h2>土壌含水率</h2>
+        <div class="mgrid" id="mGrid"></div>
+        <div class="mres" id="mRes"></div>
+        <details class="calib" id="calBox">
+          <summary>換算式（キャリブレーション）<code id="calDesc"></code></summary>
+          <label class="cfull">式の種類
+            <select id="calMode">
+              <option value="none">換算しない（測定値をそのまま使う）</option>
+              <option value="lin">一次式　y = a·x + b</option>
+              <option value="quad">二次式　y = a·x² + b·x + c</option>
+              <option value="expr">任意の式（x を使って入力）</option>
+            </select>
+          </label>
+          <div class="cgrid" id="calCoef">
+            <label>a<input id="calA" type="number" step="any" inputmode="decimal"></label>
+            <label>b<input id="calB" type="number" step="any" inputmode="decimal"></label>
+            <label id="calCWrap">c<input id="calC" type="number" step="any" inputmode="decimal"></label>
+          </div>
+          <label class="cfull" id="calExprWrap">式（x＝測定値）<input id="calExpr" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="例：0.012*x^2 + 0.45*x - 1.2"><span class="muted" style="font-size:11px">使える記号：+ − * / ^ ( )、ln( ) 自然対数、log( ) 常用対数、exp( )、sqrt( )</span></label>
+          <div class="ctest">確認：測定値<input id="calTx" type="number" step="any" inputmode="decimal" value="20">→ 含水率 <b id="calTy">—</b><span class="cerr" id="calErr"></span></div>
+          <p class="muted" style="margin:8px 0 0;font-size:12px">5地点それぞれを換算してから平均します。換算式はこの端末に保存され、次の調査にも使われます。保存した記録には、そのとき使った式が一緒に残ります。</p>
+        </details>
       </div>
 
       <div class="box">
@@ -237,6 +302,7 @@ details.help ul{margin:8px 0 0;padding-left:18px;font-size:13px;color:var(--mute
             <li>同じ種の範囲が重なった部分は、高い方の密度だけを数えます（二重計上しません）。</li>
             <li>方形区の外にはみ出して描いても、枠内だけが計算されます。枠の縁まで塗りたいときは外側まで回してください。</li>
             <li>植被率は、全種を重ねたときに各地点で最大の密度をとった値です。</li>
+            <li>土壌含水率は5地点の測定値を入力すると平均を出します。換算式を設定すると、各地点を換算してから平均します。</li>
             <li>階級はBraun-Blanquetの被度階級の目安です（5:75%超／4:50–75／3:25–50／2:10–25／1:1–10／+:1%未満）。</li>
             <li>データはこの端末のブラウザ内に保存されます。大事な記録はCSVをコピーしてメモやメールに貼り付けてください。</li>
             <li>Safariの共有メニュー「ホーム画面に追加」でアプリのように使えます。</li>
@@ -313,11 +379,13 @@ function sample(){
       {id:uid(),name:'クズ',color:COLORS[2],patches:[{id:uid(),d:75,pts:blob(.28,.76,.16,48,4)}]}
     ],active:null,photo:null};
 }
-function blank(prev){return {sample:false,plot:{id:nextId(prev?prev.plot.id:'Q-00'),date:today(),who:prev?prev.plot.who:'',w:prev?prev.plot.w:1,h:prev?prev.plot.h:1},density:100,species:[],active:null,photo:null};}
+function blank(prev){return {sample:false,plot:{id:nextId(prev?prev.plot.id:'Q-00'),date:today(),who:prev?prev.plot.who:'',w:prev?prev.plot.w:1,h:prev?prev.plot.h:1,moist:['','','','','']},density:100,species:[],active:null,photo:null};}
 function nextId(id){const m=/(\d+)(?!.*\d)/.exec(id||'');if(!m)return (id||'Q')+'-2';const n=String(+m[1]+1).padStart(m[1].length,'0');return id.slice(0,m.index)+n+id.slice(m.index+m[1].length);}
 
 let S=load(KEY_CUR)||sample();
 if(!S.active&&S.species[0])S.active=S.species[0].id;
+function fixPlot(pl){if(!Array.isArray(pl.moist)||pl.moist.length!==5)pl.moist=['','','','',''];delete pl.calib;}
+fixPlot(S.plot);
 let records=load(KEY_REC)||[];
 let undoStack=[];
 let photoImg=null;
@@ -352,8 +420,8 @@ const cv=$('cv'),ctx=cv.getContext('2d');
 let cssW=300,cssH=300,dpr=1;
 function layout(){
   const stage=$('stage');const avail=stage.clientWidth;if(!avail)return;
-  const wide=window.innerWidth>900;
-  const maxH=wide?Math.max(320,window.innerHeight-190):Math.min(window.innerHeight*0.72,avail*1.6);
+  const wide=window.innerWidth>900;const fs=$('drawSec').classList.contains('fs');
+  const maxH=fs?Math.max(120,stage.clientHeight):wide?Math.max(320,window.innerHeight-190):Math.min(window.innerHeight*0.72,avail*1.6);
   const ar=S.plot.w/S.plot.h;
   let w=avail,h=w/ar;if(h>maxH){h=maxH;w=h*ar;}
   cssW=Math.floor(w);cssH=Math.floor(h);dpr=Math.min(window.devicePixelRatio||1,3);
@@ -516,7 +584,10 @@ function renderList(){
     const el=document.createElement('div');el.className='sp'+(sp.id===S.active?' active':'');
     el.innerHTML=`<div class="sp-head"><span class="chip" style="background:${sp.color}"></span>
       <input class="sp-name" id="nm-${sp.id}" value="" aria-label="種名">
-      <div class="sp-val"><b>${c.toFixed(1)}%</b><span class="cls" title="被度階級（目安）">${bb(c)}</span><small>${m2(c)} m²・${sp.patches.length}範囲</small></div></div>`;
+      <div class="sp-val"><b>${c.toFixed(1)}%</b><span class="cls" title="被度階級（目安）">${bb(c)}</span><small>${m2(c)} m²・${sp.patches.length}範囲</small></div></div>
+      <div class="sp-extra"><label for="ht-${sp.id}">植生高</label><input id="ht-${sp.id}" class="ht" type="number" min="0" step="0.1" inputmode="decimal" placeholder="—" aria-label="植生高（cm）"><span>cm</span></div>`;
+    const ht=el.querySelector('.ht');ht.value=(sp.ht??'');
+    ht.oninput=()=>{sp.ht=ht.value.trim();save();};ht.onclick=ev=>ev.stopPropagation();
     const nm=el.querySelector('.sp-name');nm.value=sp.name;
     nm.oninput=()=>{sp.name=nm.value;save();updateActiveNote();};
     nm.onclick=ev=>ev.stopPropagation();
@@ -546,7 +617,17 @@ function renderList(){
   updateActiveNote();
   $('sampleBanner').hidden=!S.sample;
 }
-function updateActiveNote(){const sp=activeSp();$('activeNote').innerHTML=sp?`<span class="chip" style="background:${sp.color}"></span><span>描画中：<b></b></span>`:'<span class="muted">種を選ぶか追加してください</span>';if(sp)$('activeNote').querySelector('b').textContent=sp.name||'（名称未入力）';}
+function updateActiveNote(){
+  const sel=$('spSel'),sp=activeSp();sel.innerHTML='';
+  if(!S.species.length){const o=document.createElement('option');o.value='';o.textContent='種を追加してください';sel.appendChild(o);}
+  S.species.forEach(x=>{const o=document.createElement('option');o.value=x.id;o.textContent=x.name||'（名称未入力）';if(sp&&x.id===sp.id)o.selected=true;sel.appendChild(o);});
+  const ad=document.createElement('option');ad.value='__add';ad.textContent='＋ 登録種から追加…';sel.appendChild(ad);
+  $('spChip').style.background=sp?sp.color:'transparent';
+  updateFsStat();
+}
+$('spSel').onchange=e=>{const v=e.target.value;if(v==='__add'){updateActiveNote();$('openPicker').click();return;}if(v){S.active=v;save();renderList();draw();}};
+function updateFsStat(){const sp=activeSp();const c=sp?(results.sp[sp.id]||0):0;
+  $('fsStat').innerHTML=sp?`<span>この種 <b>${c.toFixed(1)}%</b>（階級 ${bb(c)}）</span><span>植被率 <b>${results.total.toFixed(1)}%</b></span><span>${S.plot.w}×${S.plot.h} m</span>`:`<span>植被率 <b>${results.total.toFixed(1)}%</b></span>`;}
 function armed(btn,msg,fn){const orig=btn.textContent;let t=null;btn.onclick=ev=>{ev&&ev.stopPropagation();if(t){clearTimeout(t);t=null;btn.textContent=orig;fn();return;}btn.textContent=msg;t=setTimeout(()=>{t=null;btn.textContent=orig;},3000);};}
 
 /* ---------- toolbar ---------- */
@@ -642,28 +723,98 @@ function warp(img,q){
 }
 function rewarp(){if(!S.photoOrig||!S.photoCorners)return;const im=new Image();im.onload=()=>{S.photo=warp(im,S.photoCorners);setPhoto();save();};im.src=S.photoOrig;}
 
+/* ---------- fullscreen drawing ---------- */
+function setFs(on){
+  const sec=$('drawSec');sec.classList.toggle('fs',on);document.body.style.overflow=on?'hidden':'';
+  $('fsBtn').textContent=on?'全画面を閉じる':'全画面で描く';
+  try{if(on){const r=document.documentElement;(r.requestFullscreen||r.webkitRequestFullscreen||function(){}).call(r)?.catch?.(()=>{});}
+      else if(document.fullscreenElement||document.webkitFullscreenElement){(document.exitFullscreen||document.webkitExitFullscreen).call(document)?.catch?.(()=>{});}}catch(e){}
+  updateFsStat();requestAnimationFrame(()=>requestAnimationFrame(layout));
+}
+$('fsBtn').onclick=()=>setFs(!$('drawSec').classList.contains('fs'));
+document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&$('drawSec').classList.contains('fs'))requestAnimationFrame(layout);});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('drawSec').classList.contains('fs')&&$('picker').hidden&&$('crop').hidden)setFs(false);});
+// stop double-tap / pinch zoom of the page
+document.addEventListener('dblclick',e=>{if(!e.target.closest('input,textarea'))e.preventDefault();},{passive:false});
+['gesturestart','gesturechange'].forEach(t=>document.addEventListener(t,e=>e.preventDefault(),{passive:false}));
+let lastTE=0;document.addEventListener('touchend',e=>{const n=Date.now();if(n-lastTE<300&&e.target.closest('#drawSec .stage, .crop-stage'))e.preventDefault();lastTE=n;},{passive:false});
+
+/* ---------- soil moisture ---------- */
+let CAL=(()=>{const c=load('qcover.calib');return c&&c.mode?c:{mode:'none',a:1,b:0,c:0,expr:'x'};})();
+function num(v){const n=parseFloat(String(v).replace(',','.'));return isFinite(n)?n:null;}
+function calFn(cal){
+  cal=cal||{mode:'none'};
+  if(cal.mode==='lin'){const a=num(cal.a),b=num(cal.b)??0;if(a===null)return null;return x=>a*x+b;}
+  if(cal.mode==='quad'){const a=num(cal.a)??0,b=num(cal.b)??0,c=num(cal.c)??0;return x=>a*x*x+b*x+c;}
+  if(cal.mode==='expr'){let t=String(cal.expr||'').trim().toLowerCase().replace(/[×＊]/g,'*').replace(/[÷／]/g,'/').replace(/[－−]/g,'-').replace(/＋/g,'+').replace(/（/g,'(').replace(/）/g,')');
+    if(!t)return null;const chk=t.replace(/\b(ln|log|exp|sqrt|x)\b/g,'');if(/[^0-9+\-*/().\s^e]/.test(chk))return null;
+    t=t.replace(/\^/g,'**').replace(/\bln\(/g,'Math.log(').replace(/\blog\(/g,'Math.log10(').replace(/\bexp\(/g,'Math.exp(').replace(/\bsqrt\(/g,'Math.sqrt(');
+    try{const f=new Function('x','"use strict";return ('+t+');');const y=f(10);if(typeof y!=='number')return null;return f;}catch(e){return null;}}
+  return x=>x;
+}
+function fmtC(v){v=num(v)??0;return (v<0?'− ':'+ ')+Math.abs(v);}
+function calDesc(cal){cal=cal||{mode:'none'};
+  if(cal.mode==='lin')return `y = ${num(cal.a)??'?'}x ${fmtC(cal.b)}`;
+  if(cal.mode==='quad')return `y = ${num(cal.a)??0}x² ${fmtC(cal.b)}x ${fmtC(cal.c)}`;
+  if(cal.mode==='expr')return 'y = '+(cal.expr||'');
+  return '換算なし';}
+function moistStats(plot,cal){
+  const raw=(plot.moist||[]).map(num).filter(v=>v!==null);const f=calFn(cal);
+  if(!raw.length)return {n:0};
+  const rawMean=raw.reduce((a,b)=>a+b,0)/raw.length;
+  let corr=null,mean=null,sd=null;
+  if(f){corr=raw.map(f);if(corr.every(isFinite)){mean=corr.reduce((a,b)=>a+b,0)/corr.length;sd=corr.length>1?Math.sqrt(corr.reduce((a,b)=>a+(b-mean)**2,0)/(corr.length-1)):null;}else corr=null;}
+  return {n:raw.length,raw,rawMean,corr,mean,sd};
+}
+const fx=(v,d=1)=>v===null||v===undefined||!isFinite(v)?'—':v.toFixed(d);
+function buildMoist(){const g=$('mGrid');g.innerHTML='';for(let i=0;i<5;i++){const l=document.createElement('label');l.textContent='地点'+(i+1);const inp=document.createElement('input');inp.type='number';inp.step='any';inp.inputMode='decimal';inp.id='m'+i;inp.placeholder='—';
+  inp.oninput=()=>{S.plot.moist[i]=inp.value.trim();save();renderMoist();};l.appendChild(inp);g.appendChild(l);}}
+function fillMoist(){for(let i=0;i<5;i++)$('m'+i).value=S.plot.moist[i]??'';renderMoist();}
+function renderMoist(){
+  const st=moistStats(S.plot,CAL);const conv=CAL.mode!=='none';
+  $('mRes').innerHTML=`<div><span>測定地点数</span><b>${st.n}/5</b></div><div${conv?'':' class="main"'}><span>測定値の平均</span><b>${st.n?fx(st.rawMean,2):'—'}</b></div><div${conv?' class="main"':''}><span>${conv?'含水率（換算後）%':'含水率 %'}</span><b>${st.n?(conv?fx(st.mean):fx(st.rawMean)):'—'}</b></div>`+
+    (st.n>1?`<div style="grid-column:1/-1"><span>${conv?'換算後':'測定値'}の標準偏差 ${fx(conv?st.sd:sd(st.raw),2)}${conv&&st.corr?'　各地点：'+st.corr.map(v=>fx(v)).join(' / '):''}</span></div>`:'');
+}
+function sd(a){if(!a||a.length<2)return null;const m=a.reduce((x,y)=>x+y,0)/a.length;return Math.sqrt(a.reduce((x,y)=>x+(y-m)**2,0)/(a.length-1));}
+function fillCal(){$('calMode').value=CAL.mode;$('calA').value=CAL.a??'';$('calB').value=CAL.b??'';$('calC').value=CAL.c??'';$('calExpr').value=CAL.expr??'';renderCal();}
+function renderCal(){
+  const m=CAL.mode;$('calCoef').hidden=!(m==='lin'||m==='quad');$('calCWrap').hidden=m!=='quad';$('calExprWrap').hidden=m!=='expr';
+  $('calDesc').textContent=calDesc(CAL);
+  const f=calFn(CAL),x=num($('calTx').value);$('calErr').textContent='';
+  if(!f){$('calTy').textContent='—';$('calErr').textContent=m==='expr'?'式を読み取れません':'係数 a を入力してください';}
+  else{const y=x===null?null:f(x);$('calTy').textContent=y===null||!isFinite(y)?'—':y.toFixed(2)+' %';}
+  $('calTx').closest('.ctest').hidden=m==='none';
+  renderMoist();
+}
+function calChanged(){CAL={mode:$('calMode').value,a:$('calA').value.trim(),b:$('calB').value.trim(),c:$('calC').value.trim(),expr:$('calExpr').value};store('qcover.calib',CAL);renderCal();}
+['calMode','calA','calB','calC','calExpr'].forEach(id=>$(id).addEventListener('input',calChanged));
+$('calTx').addEventListener('input',renderCal);
+buildMoist();
+
 /* ---------- records & CSV ---------- */
-const HEAD=['調査区ID','調査日','調査者','幅(m)','奥行(m)','種名','被度(%)','面積(m2)','被度階級','範囲数','範囲別(面積%×密度%)'];
+const HEAD=['調査区ID','調査日','調査者','幅(m)','奥行(m)','種名','植生高(cm)','被度(%)','面積(m2)','被度階級','範囲数','範囲別(面積%×密度%)','含水率測定値(地点1〜5)','測定値平均','含水率(%)','換算式'];
 function q(v){v=String(v??'');return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;}
-function rowsFor(plot,species,res){
-  const rows=species.map(sp=>{const c=res.sp[sp.id]||0;return [plot.id,plot.date,plot.who||'',plot.w,plot.h,sp.name,c.toFixed(1),(c/100*plot.w*plot.h).toFixed(3),bb(c),sp.patches.length,sp.patches.map(p=>(res.patch[p.id]||0).toFixed(1)+'×'+p.d).join(' ')];});
-  rows.push([plot.id,plot.date,plot.who||'',plot.w,plot.h,'（植被率）',res.total.toFixed(1),(res.total/100*plot.w*plot.h).toFixed(3),bb(res.total),'','']);
+function rowsFor(plot,species,res,cal){
+  cal=cal||CAL;const st=moistStats(plot,cal);const conv=cal.mode!=='none';
+  const mc=[(plot.moist||[]).map(v=>v===''||v==null?'-':v).join(' / '),st.n?st.rawMean.toFixed(2):'',st.n?(conv?fx(st.mean):st.rawMean.toFixed(1)):'',st.n?calDesc(cal):''];
+  const rows=species.map(sp=>{const c=res.sp[sp.id]||0;return [plot.id,plot.date,plot.who||'',plot.w,plot.h,sp.name,sp.ht??'',c.toFixed(1),(c/100*plot.w*plot.h).toFixed(3),bb(c),sp.patches.length,sp.patches.map(p=>(res.patch[p.id]||0).toFixed(1)+'×'+p.d).join(' '),...mc];});
+  rows.push([plot.id,plot.date,plot.who||'',plot.w,plot.h,'（植被率）','',res.total.toFixed(1),(res.total/100*plot.w*plot.h).toFixed(3),bb(res.total),'','',...mc]);
   return rows;
 }
 function csvOf(rows){return [HEAD,...rows].map(r=>r.map(q).join(',')).join('\n');}
 async function copyText(t,outId){const out=$(outId||'csvOut');try{await navigator.clipboard.writeText(t);out.hidden=true;toast('CSVをコピーしました');}catch(e){out.hidden=false;out.value=t;out.focus();out.select();toast('下の欄を選択してコピーしてください');}}
 $('csvBtn').onclick=()=>copyText(csvOf(rowsFor(S.plot,S.species,results)));
-$('csvAllBtn').onclick=()=>{if(!records.length){toast('保存した調査がありません');return;}copyText(csvOf(records.flatMap(r=>rowsFor(r.plot,r.species,r.results))),'csvOutAll');};
+$('csvAllBtn').onclick=()=>{if(!records.length){toast('保存した調査がありません');return;}copyText(csvOf(records.flatMap(r=>rowsFor(r.plot,r.species,r.results,r.calib||{mode:'none'}))),'csvOutAll');};
 $('saveBtn').onclick=()=>{
   if(!S.species.length){toast('保存する種がありません');return;}
-  const rec={key:uid(),savedAt:new Date().toISOString(),plot:JSON.parse(JSON.stringify(S.plot)),species:JSON.parse(JSON.stringify(S.species)),results:JSON.parse(JSON.stringify(results))};
+  const rec={key:uid(),savedAt:new Date().toISOString(),plot:JSON.parse(JSON.stringify(S.plot)),species:JSON.parse(JSON.stringify(S.species)),results:JSON.parse(JSON.stringify(results)),calib:JSON.parse(JSON.stringify(CAL))};
   const i=records.findIndex(r=>r.plot.id===rec.plot.id&&r.plot.date===rec.plot.date);
   if(i>=0)records[i]=rec;else records.unshift(rec);
   if(!store(KEY_REC,records))toast('保存できませんでした（ブラウザの保存領域）');else toast((i>=0?'上書き保存しました：':'保存しました：')+rec.plot.id);
   renderRecs();
 };
-armed($('newBtn'),'もう一度押すと画面を消去',()=>{S=blank(S);undoStack=[];photoImg=null;setPhoto();save();fillFields();layout();compute();renderDens();toast('新しい調査を始めました');});
-$('clearSample').onclick=()=>{S=blank(null);S.plot.id='Q-01';save();fillFields();layout();compute();};
+armed($('newBtn'),'もう一度押すと画面を消去',()=>{S=blank(S);undoStack=[];photoImg=null;setPhoto();save();fillFields();fillMoist();layout();compute();renderDens();toast('新しい調査を始めました');});
+$('clearSample').onclick=()=>{S=blank(null);S.plot.id='Q-01';save();fillFields();fillMoist();layout();compute();};
 function renderRecs(){
   const L=$('recList');L.innerHTML='';$('recCount').textContent=records.length?records.length:'';
   if(!records.length){L.innerHTML='<p class="muted" style="margin:0">まだ保存した調査はありません。計測画面の「この調査を保存」で追加されます（この端末のみに保存）。</p>';return;}
@@ -672,21 +823,22 @@ function renderRecs(){
     const hd=document.createElement('div');hd.className='rh';
     hd.innerHTML='<div><b></b><div class="meta"></div></div><div style="text-align:right"><div class="tot"></div><div class="meta">植被率</div></div>';
     hd.querySelector('b').textContent=r.plot.id||'（ID未入力）';
-    hd.querySelector('.meta').textContent=`${r.plot.date||''}・${r.plot.w}×${r.plot.h} m${r.plot.who?'・'+r.plot.who:''}`;
+    const ms=moistStats(r.plot,r.calib||{mode:'none'});const mtxt=ms.n?`・含水率 ${(r.calib&&r.calib.mode!=='none')?fx(ms.mean):fx(ms.rawMean)}%（${ms.n}地点）`:'';
+    hd.querySelector('.meta').textContent=`${r.plot.date||''}・${r.plot.w}×${r.plot.h} m${r.plot.who?'・'+r.plot.who:''}${mtxt}`;
     hd.querySelector('.tot').textContent=r.results.total.toFixed(1)+'%';
     const wrap=document.createElement('div');wrap.style.overflowX='auto';
     const t=document.createElement('table');t.className='tbl';
-    t.innerHTML='<thead><tr><th>種名</th><th style="text-align:right">被度%</th><th style="text-align:right">m²</th><th style="text-align:right">階級</th></tr></thead>';
+    t.innerHTML='<thead><tr><th>種名</th><th style="text-align:right">高さcm</th><th style="text-align:right">被度%</th><th style="text-align:right">m²</th><th style="text-align:right">階級</th></tr></thead>';
     const tb=document.createElement('tbody');
     r.species.forEach(sp=>{const c=r.results.sp[sp.id]||0;const tr=document.createElement('tr');
-      tr.innerHTML=`<td><span class="chip" style="background:${sp.color};vertical-align:-2px;margin-right:6px"></span><span></span></td><td class="n">${c.toFixed(1)}</td><td class="n">${(c/100*r.plot.w*r.plot.h).toFixed(3)}</td><td class="n">${bb(c)}</td>`;
+      tr.innerHTML=`<td><span class="chip" style="background:${sp.color};vertical-align:-2px;margin-right:6px"></span><span></span></td><td class="n">${sp.ht?sp.ht:'—'}</td><td class="n">${c.toFixed(1)}</td><td class="n">${(c/100*r.plot.w*r.plot.h).toFixed(3)}</td><td class="n">${bb(c)}</td>`;
       tr.querySelector('td span:last-child').textContent=sp.name;tb.appendChild(tr);});
     t.appendChild(tb);wrap.appendChild(t);
     const act=document.createElement('div');act.className='actions';
     const ld=document.createElement('button');ld.className='btn primary';ld.textContent='開いて編集';
-    ld.onclick=()=>{S={sample:false,plot:JSON.parse(JSON.stringify(r.plot)),density:S.density,species:JSON.parse(JSON.stringify(r.species)),active:r.species[0]?r.species[0].id:null,photo:null};photoImg=null;setPhoto();undoStack=[];save();fillFields();showView('measure');compute();toast(r.plot.id+'を開きました');};
+    ld.onclick=()=>{S={sample:false,plot:JSON.parse(JSON.stringify(r.plot)),density:S.density,species:JSON.parse(JSON.stringify(r.species)),active:r.species[0]?r.species[0].id:null,photo:null};fixPlot(S.plot);photoImg=null;setPhoto();undoStack=[];save();fillFields();fillMoist();showView('measure');compute();toast(r.plot.id+'を開きました');};
     const cp=document.createElement('button');cp.className='btn';cp.textContent='CSVコピー';
-    cp.onclick=()=>copyText(csvOf(rowsFor(r.plot,r.species,r.results)),'csvOutAll');
+    cp.onclick=()=>copyText(csvOf(rowsFor(r.plot,r.species,r.results,r.calib||{mode:'none'})),'csvOutAll');
     const del=document.createElement('button');del.className='btn warn';del.textContent='削除';
     armed(del,'もう一度押すと削除',()=>{records=records.filter(x=>x!==r);store(KEY_REC,records);renderRecs();toast('削除しました');});
     act.append(ld,cp,del);
@@ -706,7 +858,7 @@ $('tabMeasure').onclick=()=>showView('measure');
 $('tabRecords').onclick=()=>showView('records');
 
 /* ---------- boot ---------- */
-fillFields();renderDens();setPhoto();renderRecs();
+fillFields();fillMoist();fillCal();renderDens();setPhoto();renderRecs();
 if(location.hash==='#records')showView('records');else layout();compute();
 let rz;window.addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(()=>{layout();cropLayout();},120);});
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change',draw);
